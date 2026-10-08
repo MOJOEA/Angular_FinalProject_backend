@@ -1,10 +1,10 @@
 import { Router } from "express";
 
-import { gettest, getcon } from "../controller/test/get.test"; 
+import { ControllerGetTest, ControllerGetCon } from "../controller/test.controller"; 
 
 const router = Router();
 
-router.get("/", gettest);
-router.get("/con", getcon);
+router.get("/", ControllerGetTest);
+router.get("/con", ControllerGetCon);
 
 export default router; 
