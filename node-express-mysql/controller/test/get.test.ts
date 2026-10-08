@@ -7,7 +7,6 @@ export const gettest = async (req: Request, res: Response) => {
 
 export const getcon = async (req: Request, res: Response) => {
     try {
-        // เปลี่ยนคำสั่ง SQL เป็น DATABASE()
         const [rows]: any = await conn.query('SELECT DATABASE() AS databaseName, NOW() AS databasetime');
         res.json({ 
             success: true, 
