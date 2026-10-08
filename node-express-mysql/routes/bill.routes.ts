@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { getBill, getBills } from "../controller/bill/get.Bill"; 
+import { getBill, getBills } from "../controller/get.Bill"; 
 
 const router = Router();
 
