@@ -5,7 +5,7 @@
 ระบบ Backend API สำหรับจัดการข้อมูลลูกค้า (Customer) และรายการสั่งซื้อ (Order) พร้อมรองรับระบบค้นหาพิกัดตำแหน่ง (Geospatial Query) 
 
 ## Base URL
-`https://vercel.app`
+`https://vercel.com/puppun/angular-final-project-backend`
 
 ---
 
