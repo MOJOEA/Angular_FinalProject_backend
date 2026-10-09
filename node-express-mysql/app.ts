@@ -19,3 +19,5 @@ app.use("/api/route", RoutesStopRoutes);
 app.use("/api/order", OrderRoutes);
 
 app.use("/api/customer", CustomerRoutes);//
+
+module.exports = app;
