@@ -16,4 +16,11 @@ app.use("/api/route", RoutesStopRoutes);
 app.use("/api/order", OrderRoutes);
 app.use("/api/customer", CustomerRoutes);
 
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    message: "Backend is running",
+  });
+});
+
 export default app;
