@@ -1,110 +1,231 @@
 import { Request, Response } from "express";
-import * as db from "../Service/order.service";
+import { createOrder, getOrderById } from "../Service/order.service";
+import { getOrder } from "../Service/order.service";
+import { resetAndCreateTestOrders } from "../Service/order.service";
+import { updateOrderBoxCount } from "../Service/order.service"; 
+import { deleteOrderById } from "../Service/order.service";
+import { clearAllOrders } from "../Service/order.service";
 
-export const getOrders = async (req: Request, res: Response) => {
+export const ControllerGetOrderId = async (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+
+  if (!Number.isSafeInteger(id) || id < 1) {
+    res.status(400).json({ success: false, message: "id ไม่ถูกต้อง" });
+    return;
+  }
+
   try {
-    const { limit, lat, lng } = req.query;
-    const filters: db.OrderFilterInput = {};
+    const order = await getOrderById(id);
 
-    if (limit) {
-      const parsedLimit = parseInt(limit as string, 10);
-      if (!isNaN(parsedLimit)) filters.limit = parsedLimit;
+    if (!order) {
+      res.status(404).json({ success: false, message: "ไม่พบออเดอร์" });
+      return;
     }
 
-    if (lat && lng) {
-      const parsedLat = parseFloat(lat as string);
-      const parsedLng = parseFloat(lng as string);
-      if (isNaN(parsedLat) || isNaN(parsedLng)) {
-        return res.status(400).json({ success: false, message: "พิกัด lat หรือ lng ทศนิยมไม่ถูกต้อง" });
-      }
-      filters.lat = parsedLat;
-      filters.lng = parsedLng;
+    res.json({ success: true, order });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    res.status(500).json({
+      success: false,
+      message: "ดึงข้อมูลออเดอร์ไม่สำเร็จ",
+      error: errorMessage,
+    });
+  }
+};
+
+export const ControllerGetOrder = async (req: Request, res: Response) => {
+  const { limit: rawLimit, lat: rawLat, lng: rawLng } = req.query;
+
+  if (
+    (rawLimit !== undefined && typeof rawLimit !== "string") ||
+    (rawLat !== undefined && typeof rawLat !== "string") ||
+    (rawLng !== undefined && typeof rawLng !== "string")
+  ) {
+    res.status(400).json({
+      success: false,
+      message: "ค่า query ต้องระบุอย่างละหนึ่งค่า",
+    });
+    return;
+  }
+
+  const limit = rawLimit === undefined ? undefined : Number(rawLimit);
+  const lat = rawLat === undefined ? undefined : Number(rawLat);
+  const lng = rawLng === undefined ? undefined : Number(rawLng);
+
+  if (
+    limit !== undefined &&
+    (!Number.isSafeInteger(limit) || limit < 1)
+  ) {
+    res.status(400).json({
+      success: false,
+      message: "limit ต้องเป็นจำนวนเต็มบวก",
+    });
+    return;
+  }
+
+  if ((lat === undefined) !== (lng === undefined)) {
+    res.status(400).json({
+      success: false,
+      message: "ต้องส่ง lat และ lng มาคู่กัน",
+    });
+    return;
+  }
+
+  if (
+    (lat !== undefined && (!Number.isFinite(lat) || lat < -90 || lat > 90)) ||
+    (lng !== undefined && (!Number.isFinite(lng) || lng < -180 || lng > 180))
+  ) {
+    res.status(400).json({
+      success: false,
+      message: "พิกัด lat/lng ไม่ถูกต้อง",
+    });
+    return;
+  }
+
+  try {
+    const orders = await getOrder(limit, lat, lng);
+    res.json({ success: true, orders });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    res.status(500).json({
+      success: false,
+      message: "ดึงรายการออเดอร์ไม่สำเร็จ",
+      error: message,
+    });
+  }
+};
+
+export const ControllerCreateOrder = async (req: Request, res: Response) => {
+  const { customer_id, box_count, order_note } = req.body ?? {};
+
+  if (
+    !Number.isSafeInteger(customer_id) ||
+    customer_id < 1 ||
+    !Number.isSafeInteger(box_count) ||
+    box_count < 1 ||
+    (order_note !== undefined && typeof order_note !== "string")
+  ) {
+    res.status(400).json({
+      success: false,
+      message: "กรุณาส่ง customer_id และ box_count เป็นจำนวนเต็มบวก",
+    });
+    return;
+  }
+
+  try {
+    const orderId = await createOrder(customer_id, box_count, order_note);
+    res.status(201).json({ success: true, order_id: orderId });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    res.status(500).json({
+      success: false,
+      message: "สร้างออเดอร์ไม่สำเร็จ",
+      error: message,
+    });
+  }
+};
+
+export const ControllerCreateTestOrders = async (
+  _req: Request,
+  res: Response
+) => {
+  try {
+    const orderIds = await resetAndCreateTestOrders();
+
+    res.status(201).json({
+      success: true,
+      count: orderIds.length,
+      order_ids: orderIds,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+
+    res.status(500).json({
+      success: false,
+      message: "สร้างออเดอร์ทดสอบไม่สำเร็จ",
+      error: message,
+    });
+  }
+};
+
+export const ControllerUpdateOrder = async (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+  const { box_count } = req.body ?? {};
+
+  if (!Number.isSafeInteger(id) || id < 1) {
+    res.status(400).json({ success: false, message: "id ไม่ถูกต้อง" });
+    return;
+  }
+  
+  if (!Number.isSafeInteger(box_count) || box_count < 1 || box_count > 3) {
+    res.status(400).json({
+      success: false,
+      message: "box_count ต้องเป็นจำนวนเต็มตั้งแต่ 1 ถึง 3",
+    });
+    return;
+  }
+
+  try {
+    const found = await updateOrderBoxCount(id, box_count);
+
+    if (!found) {
+      res.status(404).json({ success: false, message: "ไม่พบออเดอร์" });
+      return;
     }
 
-    const orders = await db.getOrdersWithFilters(filters);
-    return res.json({ success: true, total: orders.length, data: orders });
-  } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
+    res.json({ success: true, message: "แก้ไขจำนวนกล่องแล้ว" });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    res.status(500).json({
+      success: false,
+      message: "แก้ไขออเดอร์ไม่สำเร็จ",
+      error: message,
+    });
   }
 };
 
-export const getOrder = async (req: Request, res: Response) => {
-  try {
-    const order = await db.getOrderById(parseInt(req.params.id as string, 10));
-    if (!order) return res.status(404).json({ success: false, message: "ไม่พบคำสั่งซื้อ" });
-    return res.json({ success: true, data: order });
-  } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
-  }
-};
+export const ControllerDeleteOrder = async (req: Request, res: Response) => {
+  const id = Number(req.params.id);
 
-export const postOrder = async (req: Request, res: Response) => {
+  if (!Number.isSafeInteger(id) || id < 1) {
+    res.status(400).json({ success: false, message: "id ไม่ถูกต้อง" });
+    return;
+  }
+
   try {
-    const currentOrders = await db.getOrdersWithFilters({});
-    if (currentOrders.length >= 30) {
-      return res.status(400).json({ 
-        success: false, 
-        message: `ไม่สามารถสร้างคำสั่งซื้อเพิ่มได้ เนื่องจากระบบจำกัดจำนวนคำสั่งซื้อไว้สูงสุดไม่เกิน 30 รายการ (ปัจจุบันมี ${currentOrders.length} รายการ)` 
-      });
+    const deleted = await deleteOrderById(id);
+
+    if (!deleted) {
+      res.status(404).json({ success: false, message: "ไม่พบออเดอร์" });
+      return;
     }
 
-    await db.createOrder(req.body);
-    return res.status(201).json({ success: true, message: "สร้างคำสั่งซื้อสำเร็จ" });
-  } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
+    res.json({ success: true, message: "ลบออเดอร์แล้ว" });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    res.status(500).json({
+      success: false,
+      message: "ลบออเดอร์ไม่สำเร็จ",
+      error: message,
+    });
   }
 };
 
-export const postOrderTest = async (req: Request, res: Response) => {
+export const ControllerClearOrders = async (_req: Request, res: Response) => {
   try {
-    await db.clearAllOrders();
-    const customerIds = await db.getAllCustomerIds();
+    const deletedCount = await clearAllOrders();
 
-    if (customerIds.length === 0) {
-      return res.status(400).json({ success: false, message: "กรุณาสร้างข้อมูลลูกค้าก่อนรันสคริปต์จำลอง" });
-    }
-
-    const notes = ["ขอช้อนส้อมเพิ่มด้วยครับ", "ส่งที่ป้อมยาม", "ไม่เอาผัก", "เผ็ดน้อย", "ฝากไว้ใต้ตึก", ""];
-    for (let i = 0; i < 25; i++) {
-      const mockOrder: any = {
-        customer_id: customerIds[Math.floor(Math.random() * customerIds.length)],
-        box_count: Math.floor(Math.random() * 5) + 1,
-        order_note: notes[Math.floor(Math.random() * notes.length)]
-      };
-      await db.createOrder(mockOrder);
-    }
-
-    return res.status(201).json({ success: true, message: "จำลองข้อมูลคำสั่งซื้อใหม่ 25 รายการเรียบร้อย" });
-  } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
-  }
-};
-
-export const putOrder = async (req: Request, res: Response) => {
-  try {
-    const success = await db.updateOrder(parseInt(req.params.id as string, 10), req.body);
-    if (!success) return res.status(404).json({ success: false, message: "ไม่พบคำสั่งซื้อที่ต้องการอัปเดต" });
-    return res.json({ success: true, message: "อัปเดตคำสั่งซื้อสำเร็จ" });
-  } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
-  }
-};
-
-export const deleteOrder = async (req: Request, res: Response) => {
-  try {
-    const success = await db.deleteOrder(parseInt(req.params.id as string, 10));
-    if (!success) return res.status(404).json({ success: false, message: "ไม่พบคำสั่งซื้อที่ต้องการลบ" });
-    return res.json({ success: true, message: "ลบคำสั่งซื้อสำเร็จ" });
-  } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
-  }
-};
-
-export const deleteOrderClear = async (req: Request, res: Response) => {
-  try {
-    await db.clearAllOrders();
-    return res.json({ success: true, message: "ล้างรายการสั่งซื้อทั้งหมดเรียบร้อย" });
-  } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
+    res.json({
+      success: true,
+      message: "ลบออเดอร์ทั้งหมดแล้ว",
+      deleted_count: deletedCount,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    res.status(500).json({
+      success: false,
+      message: "ลบออเดอร์ทั้งหมดไม่สำเร็จ",
+      error: message,
+    });
   }
 };

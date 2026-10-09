@@ -1,17 +1,22 @@
 import { Router } from "express";
-import * as ctrl from "../controller/order.controller";
+import { ControllerClearOrders, ControllerCreateOrder, ControllerCreateTestOrders, ControllerDeleteOrder, ControllerGetOrder, ControllerGetOrderId, ControllerUpdateOrder } from "../controller/order.controller";
+    
 
 const router = Router();
 
-router.get("/", ctrl.getOrders); 
-router.get("/:id", ctrl.getOrder);
+router.get("/", ControllerGetOrder);
 
-router.post("/", ctrl.postOrder);
-router.post("/test", ctrl.postOrderTest);
+router.get("/:id", ControllerGetOrderId);
 
-router.put("/:id", ctrl.putOrder);
+router.post("/", ControllerCreateOrder);
 
-router.delete("/clear", ctrl.deleteOrderClear);
-router.delete("/:id", ctrl.deleteOrder);
+router.post("/test", ControllerCreateTestOrders);
+
+router.put("/:id", ControllerUpdateOrder);
+
+router.delete("/clear", ControllerClearOrders);
+
+router.delete("/:id", ControllerDeleteOrder);
 
 export default router;
+
