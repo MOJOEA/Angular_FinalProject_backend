@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import { Request, Response } from "express";
 import { getCon } from "../Service/test.service";
 
 export const ControllerGetTest = async (req: Request, res: Response) => {
