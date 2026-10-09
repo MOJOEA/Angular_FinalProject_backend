@@ -33,13 +33,26 @@ export const createWork = async (req: Request, res: Response) => {
   }
 };
 
-// POST api/work/:id (Update)
+// PUT / POST api/work/:id (Update)
 export const updateWorkById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const updated = await workService.updateWorkByIdService(id as string, req.body);
-    if (!updated) return res.status(404).json({ success: false, message: 'Work not found' });
-    res.status(200).json({ success: true, data: updated });
+    const updateData = req.body; // 1. ดึงข้อมูลที่ส่งมาจาก Body (job_code, color, stops)
+
+    // 2. เรียกใช้ Service สำหรับอัปเดต โดยส่งทั้ง id และ body ไป
+    const updated = await workService.updateWorkByIdService(id as string, updateData);
+
+    // 3. เช็กว่าหาข้อมูล ID นั้นเจอไหม
+    if (!updated) {
+      return res.status(404).json({ success: false, message: 'Work not found' });
+    }
+
+    // 4. ส่ง Response ตอบกลับเมื่ออัปเดตสำเร็จ
+    res.status(200).json({ 
+      success: true, 
+      message: 'Work updated successfully', 
+      data: updated 
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error', error });
   }
@@ -55,13 +68,17 @@ export const clearAllWorks = async (req: Request, res: Response) => {
   }
 };
 
-// DET (DELETE) api/work/:id
 export const deleteWorkById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const deleted = await workService.deleteWorkByIdService(id as string);
-    if (!deleted) return res.status(404).json({ success: false, message: 'Work not found' });
-    res.status(200).json({ success: true, message: 'Work deleted' });
+    const isDeleted = await workService.deleteWorkByIdService(id as string);
+
+    // เช็กถ้าลบไม่สำเร็จ (affectedRows === 0)
+    if (!isDeleted) {
+      return res.status(404).json({ success: false, message: 'Work not found or already deleted' });
+    }
+
+    res.status(200).json({ success: true, message: 'Work deleted successfully' });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error', error });
   }

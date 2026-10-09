@@ -16,7 +16,7 @@ router.get('/:id', getWorkById);     // GET api/work/:id
 
 // POST
 router.post('/', createWork);        // POST api/work
-router.post('/:id', updateWorkById); // POST api/work/:id
+router.post('/single', updateWorkById); // POST api/work/:id
 
 // DELETE (*** ต้องเรียง /clear ไว้ก่อน /:id ห้ามสลับกันเด็ดขาด ***)
 router.delete('/clear', clearAllWorks);  // DELETE api/work/clear
