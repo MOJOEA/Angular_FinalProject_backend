@@ -24,12 +24,6 @@ app.get("/health", (req, res) => {
   });
 });
 
-<<<<<<< HEAD
-
-// นำไปใช้กับ prefix /api/work
 app.use('/api/work', workRoutes);
 
-
-=======
 export default app;
->>>>>>> origin/main
