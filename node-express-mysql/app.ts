@@ -1,5 +1,6 @@
 import express from "express";
 
+import workRoutes from './routes/work.routes';
 import TestRoutes from "./routes/test.routes"; 
 import SettingsRoutes from "./routes/settings.routes"; 
 import RoutesStopRoutes from "./routes/route.routes"; 
@@ -23,4 +24,12 @@ app.get("/health", (req, res) => {
   });
 });
 
+<<<<<<< HEAD
+
+// นำไปใช้กับ prefix /api/work
+app.use('/api/work', workRoutes);
+
+
+=======
 export default app;
+>>>>>>> origin/main
