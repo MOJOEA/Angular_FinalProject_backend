@@ -25,10 +25,11 @@ export const getRouteStopsByWorkId = async (workId: number): Promise<RouteStop[]
 
 // ฟังก์ชัน: เพิ่มข้อมูล : ตาราง route_stops
 export const addRouteStops = async (workId: number, order_id: number, customer_id: number, sequence_no: number): Promise<boolean> => {
-    const query = "INSERT INTO `route_stops` (`work_id`, `order_id`, `customer_id`, `sequence_no`, `status`) VALUES (?, ?, ?, 'pending')"
+    const query = "INSERT INTO `route_stops` (`work_id`, `order_id`, `customer_id`, `sequence_no`) VALUES (?, ?, ?, ?)"
     const [result]: any = await conn.query(query, [workId, order_id, customer_id, sequence_no]);
     return result.affectedRows > 0;
 };
+
 
 // ฟังกืชัน: เคลียร์ตาราง : ตาราง route_stops
 export const clearAllRouteStops = async (): Promise<boolean> => {

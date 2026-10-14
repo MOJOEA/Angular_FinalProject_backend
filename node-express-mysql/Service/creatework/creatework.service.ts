@@ -8,12 +8,13 @@ import { PlanningOrder } from '../../Model/Works.model';
 import { getOrder } from '../order.service';
 import { getCustomer } from '../customer.service';
 import { getSetting } from '../setting.service';
+import { addRouteStops } from '../route.service';
 
 
 // ฟังก์ชันจำลองสำหรับทดสอบบันทึกข้อมูลลง DB
-export async function addRouteStops(workId: number, order_id: number, customer_id: number, sequence_no: number): Promise<void> {
+/*export async function addRouteStops(workId: number, order_id: number, customer_id: number, sequence_no: number): Promise<void> {
   console.log(`[Test DB] addRouteStops -> workId: ${workId}, order_id: ${order_id}, customer_id: ${customer_id}, sequence_no: ${sequence_no}`);
-}
+}*/
 
 export class WorkOrderService {
   private depot!: { latitude: number; longitude: number };

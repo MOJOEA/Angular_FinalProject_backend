@@ -1,12 +1,14 @@
 import { Request, Response } from "express";
 import { getCon } from "../Service/test.service";
+import { clearAllRouteStops } from "../Service/route.service";
 
 import { WorkOrderService } from "../Service/creatework/creatework.service";
 
 export const ControllerCreatework = async (req: Request, res: Response) => {
     try {
         const workOrderService = new WorkOrderService();
-        const result = await workOrderService.generateWorkOrders();
+        await clearAllRouteStops();
+        await workOrderService.generateWorkOrders();
         res.json({ success: true, message: 'สร้างใบสั่งงานและบันทึกข้อมูลเรียบร้อยแล้ว' });
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
