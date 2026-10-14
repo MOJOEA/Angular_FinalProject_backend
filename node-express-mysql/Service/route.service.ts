@@ -24,8 +24,15 @@ export const getRouteStopsByWorkId = async (workId: number): Promise<RouteStop[]
 };
 
 // ฟังก์ชัน: เพิ่มข้อมูล : ตาราง route_stops
-export const addRouteStops = async (workId: number, order_id: number, sequence_no: number): Promise<boolean> => {
-    const query = "INSERT INTO `route_stops` (`work_id`, `order_id`, `sequence_no`, `status`) VALUES (?, ?, ?, 'pending')"
-    const [result]: any = await conn.query(query, [workId, order_id, sequence_no]);
+export const addRouteStops = async (workId: number, order_id: number, customer_id: number, sequence_no: number): Promise<boolean> => {
+    const query = "INSERT INTO `route_stops` (`work_id`, `order_id`, `customer_id`, `sequence_no`, `status`) VALUES (?, ?, ?, 'pending')"
+    const [result]: any = await conn.query(query, [workId, order_id, customer_id, sequence_no]);
+    return result.affectedRows > 0;
+};
+
+// ฟังกืชัน: เคลียร์ตาราง : ตาราง route_stops
+export const clearAllRouteStops = async (): Promise<boolean> => {
+    const query = 'DELETE FROM route_stops'
+    const [result]: any = await conn.query(query);
     return result.affectedRows > 0;
 };

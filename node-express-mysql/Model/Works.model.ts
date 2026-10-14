@@ -9,3 +9,25 @@ export interface Works {
   created_at?:          Date;
   updated_at?:          Date;
 }
+
+export interface PlanningOrder {
+  order_id: number;
+  customer_id: number;
+  order_date: string;
+  quantity: number;
+  name: string;
+  phone: string;
+  latitude: number;
+  longitude: number;
+  distanceFromDepot: number;
+  bearing: number;
+  direction: string;
+}
+
+export interface WorkOrder {
+  work_order_id: string;
+  orders: PlanningOrder[];
+  routeCoordinates?: any[];
+  routeDistance?: String;
+  routeDuration?: String;
+}
