@@ -4,5 +4,4 @@ export interface RouteStop {
   order_id:         number;
   customer_id:      number;
   sequence_no:      number;
-  status: 'pending' | 'success' | string;
 }

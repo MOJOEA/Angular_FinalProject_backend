@@ -23,8 +23,8 @@ export class WorkOrderService {
   public async generateWorkOrders(): Promise<void> {
     const [orders, customers, settings] = await Promise.all([getOrder(), getCustomer(), getSetting()]) as [Order[], Customer[], Settings];
     this.depot = { latitude: settings.shop_latitude, longitude: settings.shop_longitude };
-    if (settings.max_orders_per_rider) {
-      this.maxOrdersPerWorkOrder = settings.max_orders_per_rider;
+    if (settings.max_orders_rider) {
+      this.maxOrdersPerWorkOrder = settings.max_orders_rider;
     }
     const planningOrders = this.prepareOrders(orders, customers);
     if (planningOrders.length) {
