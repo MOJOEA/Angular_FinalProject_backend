@@ -7,12 +7,12 @@ export interface Settings {
   box_price:                    number;
   box_cost:                     number;
   rider_base_fee:               number;
-  rider_fee_per_km_per_box:     number;
+  rider_fee_box:                number;
   rider_speed_kmh:              number;
-  max_orders_per_rider:         number;
-  max_boxes_per_order:          number;
+  max_orders_rider:             number;
+  max_boxes_order:              number;
   departure_time:               string;
-  delivery_window_minutes:      number;
+  deadline_time:                number;
   service_radius_km:            number;
   updated_at?:                  Date;
 }
