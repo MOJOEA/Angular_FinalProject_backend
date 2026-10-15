@@ -57,6 +57,70 @@ export const updateWorkById = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: 'Server error', error });
   }
 };
+// PUT /api/work/accept/:id
+export const acceptWork = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const id = req.params.id as string; 
+    const result = await workService.acceptWorkService(id); 
+
+    // กรณีไม่พบงานในระบบ
+    if (!result.found) {
+      res.status(404).json({
+        success: false,
+        message: 'Work not found'
+      });
+      return;
+    }
+
+    // กรณียิงมาแล้วเป็น shipping อยู่แล้ว -> ไม่ต้องเปลี่ยน แจ้งว่าอยู่สถานะนี้แล้ว (ไม่ส่ง data)
+    if (result.isAlreadyShipping) {
+      res.status(200).json({
+        success: true,
+        message: 'Already in shipping'
+      });
+      return;
+    }
+
+    // กรณีเปลี่ยนเป็น shipping สำเร็จ -> แจ้งสำเร็จ (ไม่ส่ง data)
+    res.status(200).json({
+      success: true,
+      message: 'Status updated to shipping'
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Internal Server Error'
+    });
+  }
+};
+
+// PUT /api/work/logout/:id
+export const logoutWork = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const id = req.params.id as string; 
+    const result = await workService.logoutWorkService(id);
+
+    // กรณีไม่พบงานในระบบ
+    if (!result.found) {
+      res.status(404).json({
+        success: false,
+        message: 'Work not found'
+      });
+      return;
+    }
+
+    // กรณีเปลี่ยนสถานะเป็น pending สำเร็จ -> แจ้งสำเร็จ (ไม่ส่ง data)
+    res.status(200).json({
+      success: true,
+      message: 'Status updated to pending'
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Internal Server Error'
+    });
+  }
+};
 
 // DET (DELETE) api/work/clear
 export const clearAllWorks = async (req: Request, res: Response) => {
@@ -83,3 +147,4 @@ export const deleteWorkById = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: 'Server error', error });
   }
 };
+
