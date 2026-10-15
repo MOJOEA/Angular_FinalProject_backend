@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 
 import workRoutes from './routes/work.routes';
 import TestRoutes from "./routes/test.routes"; 
@@ -8,6 +9,11 @@ import OrderRoutes from "./routes/order.routes";
 import CustomerRoutes from "./routes/customer.routes";
 
 const app = express();
+
+app.use(cors({
+  origin: 'http://localhost:4200', 
+  credentials: true
+}));
 
 app.use(express.json());
 
