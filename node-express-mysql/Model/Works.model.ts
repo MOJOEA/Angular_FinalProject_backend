@@ -1,15 +1,3 @@
-export interface Works {
-  work_id:              number;
-  job_code:             string;
-  color?:               string;
-  status: 'pending' | 'shipping' | 'completed' | string;
-  total_orders:         number;
-  total_quantity:       number;
-  total_boxes:          number;
-  created_at?:          Date;
-  updated_at?:          Date;
-}
-
 export interface PlanningOrder {
   order_id: number;
   customer_id: number;
@@ -24,10 +12,31 @@ export interface PlanningOrder {
   direction: string;
 }
 
-export interface WorkOrder {
-  work_order_id: string;
-  orders: PlanningOrder[];
-  routeCoordinates?: any[];
-  routeDistance?: String;
-  routeDuration?: String;
+export interface WorkData {
+  work_id: number;
+  job_code: string;
+  color: string;
+  status: string;
+  total_orders: number;
+  total_boxes: number;
+  created_at: string;
+  updated_at: string;
+  stops: RouteStop[];
+}
+
+export interface RouteStop {
+  stop_id: number;
+  work_id: number;
+  order_id: number;
+  sequence_no: number;
+  box_count: number;
+  order_note: string | null;
+  order_status: string;
+  order_created_at: string;
+  customer_id: number;
+  customer_name: string;
+  phone_number: string;
+  location_name: string;
+  latitude: number;
+  longitude: number;
 }
