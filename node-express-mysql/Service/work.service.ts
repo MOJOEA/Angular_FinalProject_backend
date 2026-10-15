@@ -1,5 +1,5 @@
 import { conn } from '../dbconnect';
-import { getRouteStopsByWorkId, addRouteStops } from './route.service';
+import { getRouteStopsByWorkId } from './route.service';
 
 // 1. GET ALL (ดึงงานทั้งหมด พร้อมดึง stops ของแต่ละงาน)
 export const getAllWorksService = async () => {

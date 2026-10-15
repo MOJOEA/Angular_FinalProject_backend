@@ -16,6 +16,7 @@ app.use("/api/setting", SettingsRoutes);
 app.use("/api/route", RoutesStopRoutes);
 app.use("/api/order", OrderRoutes);
 app.use("/api/customer", CustomerRoutes);
+app.use('/api/work', workRoutes);
 
 app.get("/health", (req, res) => {
   res.status(200).json({
@@ -23,7 +24,5 @@ app.get("/health", (req, res) => {
     message: "Backend is running",
   });
 });
-
-app.use('/api/work', workRoutes);
 
 export default app;
