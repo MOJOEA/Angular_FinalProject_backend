@@ -1,5 +1,5 @@
 import { conn } from '../dbconnect';
-import { getRouteStopsByWorkId, addRouteStops } from './route.service';
+import { getRouteStopsByWorkId } from './route.service';
 
 // 1. GET ALL (ดึงงานทั้งหมด พร้อมดึง stops ของแต่ละงาน)
 export const getAllWorksService = async () => {
@@ -51,7 +51,7 @@ const createSingleWork = async (item: any) => {
   // บันทึกรายการ stops (ถ้ามี)
   if (payload.stops && Array.isArray(payload.stops) && payload.stops.length > 0) {
     for (const stop of payload.stops) {
-      await addRouteStops(newWorkId, stop.order_id, stop.sequence_no);
+      // await addRouteStops(newWorkId, stop.order_id, stop.sequence_no);
     }
   }
 
@@ -102,7 +102,7 @@ export const updateWorkByIdService = async (id: string | number, data: any) => {
   if (stops && Array.isArray(stops)) {
     await conn.query('DELETE FROM route_stops WHERE work_id = ?', [id]);
     for (const stop of stops) {
-      await addRouteStops(Number(id), stop.order_id, stop.sequence_no);
+      // await addRouteStops(Number(id), stop.order_id, stop.sequence_no);
     }
   }
 

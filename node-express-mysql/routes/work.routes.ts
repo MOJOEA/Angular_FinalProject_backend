@@ -10,10 +10,13 @@ import {
   logoutWork   
 } from '../controller/work.controller';
 
+import { ControllerCreatework } from "../controller/creatework/creatework.controller"; 
+
 const router = Router();
 
 // GET
 router.get('/', getAllWorks);        // GET api/work
+router.get("/creat", ControllerCreatework);
 router.get('/:id', getWorkById);     // GET api/work/:id
 
 // POST
