@@ -11,7 +11,10 @@ import CustomerRoutes from "./routes/customer.routes";
 const app = express();
 
 app.use(cors({
-  origin: 'http://localhost:4200', 
+  origin: [
+    'http://localhost:4200',
+    'https://angular-final-project-bice.vercel.app/'
+  ],
   credentials: true
 }));
 
