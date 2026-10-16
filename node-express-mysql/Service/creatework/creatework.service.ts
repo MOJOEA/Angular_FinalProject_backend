@@ -1,7 +1,6 @@
 import * as turf from '@turf/turf';
-
-import { Order } from "../../Model/Order.model";
-import { Customer } from "../../Model/Customer.model";
+import { Order } from '../../Model/Order.model';
+import { Customer } from '../../Model/Customer.model';
 import { Settings } from '../../Model/Settings.model';
 import { PlanningOrder } from '../../Model/Works.model';
 import { getOrder } from '../order.service';
@@ -15,6 +14,7 @@ export class WorkOrderService {
 
   constructor() {}
 
+  // ฟังก์ชัน: สร้างใบงานและกระจายออเดอร์
   public async generateWorkOrders(): Promise<void> {
     const [orders, customers, settings] = await Promise.all([getOrder(), getCustomer(), getSetting()]) as [Order[], Customer[], Settings];
     this.depot = { latitude: settings.shop_latitude, longitude: settings.shop_longitude };
@@ -23,27 +23,26 @@ export class WorkOrderService {
     if (planningOrders.length) await this.distributeOrders(planningOrders);
   }
 
+  // ฟังก์ชัน: เตรียมข้อมูลออเดอร์และคำนวณระยะทางกับทิศทาง
   private prepareOrders(orders: Order[], customers: Customer[]): PlanningOrder[] {
     const customerMap = new Map(customers.map(c => [c.customer_id, c]));
     const depotPoint = turf.point([this.depot.longitude, this.depot.latitude]);
-    return orders
-      .map(order => {
-        const customer = customerMap.get(order.customer_id);
-        if (!customer) return null;
-        const customerPoint = turf.point([customer.longitude, customer.latitude]);
-        const bearing = turf.bearing(depotPoint, customerPoint);
-        return {
-          ...order,
-          ...customer,
-          distanceFromDepot: turf.distance(depotPoint, customerPoint, { units: 'kilometers' }),
-          bearing,
-          direction: this.getDirection(bearing),
-        } as unknown as PlanningOrder;
-      })
-      .filter((o): o is PlanningOrder => o !== null)
-      .sort((a, b) => a.distanceFromDepot - b.distanceFromDepot);
+    return orders.map(order => {
+      const customer = customerMap.get(order.customer_id);
+      if (!customer) return null;
+      const customerPoint = turf.point([customer.longitude, customer.latitude]);
+      const bearing = turf.bearing(depotPoint, customerPoint);
+      return {
+        ...order,
+        ...customer,
+        distanceFromDepot: turf.distance(depotPoint, customerPoint, { units: 'kilometers' }),
+        bearing,
+        direction: this.getDirection(bearing),
+      } as unknown as PlanningOrder;
+    }).filter((o): o is PlanningOrder => o !== null).sort((a, b) => a.distanceFromDepot - b.distanceFromDepot);
   }
 
+  // ฟังก์ชัน: จัดกลุ่มออเดอร์และบันทึกลำดับจุดส่ง
   private async distributeOrders(orders: PlanningOrder[]): Promise<void> {
     const remainingOrders = [...orders];
     let workId = 1;
@@ -51,12 +50,14 @@ export class WorkOrderService {
       const randomIndex = Math.floor(Math.random() * remainingOrders.length);
       const [seed] = remainingOrders.splice(randomIndex, 1) as [PlanningOrder];
       const currentWorkOrders: PlanningOrder[] = [seed];
+
       while (currentWorkOrders.length < this.maxOrdersPerWorkOrder && remainingOrders.length) {
         const index = this.findBestOrderIndex(currentWorkOrders, remainingOrders);
         if (index === -1) break;
         const [nextOrder] = remainingOrders.splice(index, 1) as [PlanningOrder];
         currentWorkOrders.push(nextOrder);
       }
+      
       const optimizedOrders = this.optimizeRouteSequence(currentWorkOrders);
       for (let i = 0; i < optimizedOrders.length; i++) {
         const order = optimizedOrders[i];
@@ -66,6 +67,7 @@ export class WorkOrderService {
     }
   }
 
+  // ฟังก์ชัน: เลือกออเดอร์ที่เหมาะสมสำหรับใบงาน
   private findBestOrderIndex(currentOrders: PlanningOrder[], remainingOrders: PlanningOrder[]): number {
     if (!remainingOrders.length) return -1;
     const customers = new Set(currentOrders.map(o => o.customer_id));
@@ -90,13 +92,11 @@ export class WorkOrderService {
     return Math.abs(averageDistance - current.distanceFromDepot) < Math.abs(averageDistance - best.distanceFromDepot);
   }
 
+  // ฟังก์ชัน: เรียงลำดับจุดส่งตามระยะทางใกล้ที่สุด
   private optimizeRouteSequence(orders: PlanningOrder[]): PlanningOrder[] {
     if (orders.length <= 1) return orders;
     const optimized: PlanningOrder[] = [];
-    const unvisited = orders.map(order => ({
-      order,
-      point: turf.point([order.longitude, order.latitude]),
-    }));
+    const unvisited = orders.map(order => ({ order, point: turf.point([order.longitude, order.latitude]) }));
     let currentPos = turf.point([this.depot.longitude, this.depot.latitude]);
     while (unvisited.length) {
       let nearestIdx = 0;
