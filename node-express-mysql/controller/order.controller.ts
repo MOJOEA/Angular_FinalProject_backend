@@ -5,6 +5,7 @@ import { resetAndCreateTestOrders } from "../Service/order.service";
 import { updateOrderBoxCount } from "../Service/order.service"; 
 import { deleteOrderById } from "../Service/order.service";
 import { clearAllOrders } from "../Service/order.service";
+import { OrderLimitExceededError } from "../Service/order.service";
 
 export const ControllerGetOrderId = async (req: Request, res: Response) => {
   const id = Number(req.params.id);
@@ -117,6 +118,15 @@ export const ControllerCreateOrder = async (req: Request, res: Response) => {
     res.status(201).json({ success: true, order_id: orderId });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
+    if (error instanceof OrderLimitExceededError) {
+      res.status(409).json({
+        success: false,
+        message,
+        limit: 30,
+      });
+      return;
+    }
+
     res.status(500).json({
       success: false,
       message: "สร้างออเดอร์ไม่สำเร็จ",
