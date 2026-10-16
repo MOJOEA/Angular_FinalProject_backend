@@ -13,7 +13,7 @@ const app = express();
 app.use(cors({
   origin: [
     'http://localhost:4200',
-    'https://angular-final-project-bice.vercel.app/'
+    'https://angular-final-project-bice.vercel.app'
   ],
   credentials: true
 }));
