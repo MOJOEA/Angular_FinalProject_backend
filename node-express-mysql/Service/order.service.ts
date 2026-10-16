@@ -1,6 +1,27 @@
 import { conn } from "../dbconnect";
 import { Order } from "../Model/Order.model";
 
+const MAX_ORDERS = 30;
+const ORDER_WRITE_LOCK = "order-write-limit-30";
+
+export class OrderLimitExceededError extends Error {
+  constructor() {
+    super(`จำนวนออเดอร์ครบ ${MAX_ORDERS} รายการแล้ว ไม่สามารถสร้างเพิ่มได้`);
+    this.name = "OrderLimitExceededError";
+  }
+}
+
+const acquireOrderWriteLock = async (connection: any): Promise<void> => {
+  const [rows]: any = await connection.query("SELECT GET_LOCK(?, 10) AS acquired", [ORDER_WRITE_LOCK]);
+  if (Number(rows[0]?.acquired) !== 1) {
+    throw new Error("ไม่สามารถล็อกการสร้างออเดอร์ได้ กรุณาลองใหม่");
+  }
+};
+
+const releaseOrderWriteLock = async (connection: any): Promise<void> => {
+  await connection.query("SELECT RELEASE_LOCK(?)", [ORDER_WRITE_LOCK]);
+};
+
 export const getOrderById = async (Id: number): Promise<Order> => {
     const query = "SELECT * FROM `order` WHERE `order_id` = ?";
     const [rows]: any = await conn.query(query, [Id]);
@@ -53,19 +74,43 @@ export const createOrder = async (
   boxCount: number,
   orderNote?: string
 ): Promise<number> => {
-  const [result]: any = await conn.query(
-    "INSERT INTO `order` (`customer_id`, `box_count`, `order_note`) VALUES (?, ?, ?)",
-    [customerId, boxCount, orderNote ?? null]
-  );
+  const connection = await conn.getConnection();
+  let lockAcquired = false;
 
-  return result.insertId;
+  try {
+    await acquireOrderWriteLock(connection);
+    lockAcquired = true;
+
+    const [rows]: any = await connection.query("SELECT COUNT(*) AS total FROM `order`");
+    if (Number(rows[0]?.total) >= MAX_ORDERS) {
+      throw new OrderLimitExceededError();
+    }
+
+    const [result]: any = await connection.query(
+      "INSERT INTO `order` (`customer_id`, `box_count`, `order_note`) VALUES (?, ?, ?)",
+      [customerId, boxCount, orderNote ?? null]
+    );
+
+    return result.insertId;
+  } finally {
+    try {
+      if (lockAcquired) await releaseOrderWriteLock(connection);
+    } finally {
+      connection.release();
+    }
+  }
 };
 
 export const resetAndCreateTestOrders = async (): Promise<number[]> => {
   const connection = await conn.getConnection();
+  let lockAcquired = false;
+  let transactionStarted = false;
 
   try {
+    await acquireOrderWriteLock(connection);
+    lockAcquired = true;
     await connection.beginTransaction();
+    transactionStarted = true;
 
     const [customers]: any = await connection.query(
       "SELECT `customer_id` FROM `customer`"
@@ -94,12 +139,17 @@ export const resetAndCreateTestOrders = async (): Promise<number[]> => {
     }
 
     await connection.commit();
+    transactionStarted = false;
     return orderIds;
   } catch (error) {
-    await connection.rollback();
+    if (transactionStarted) await connection.rollback();
     throw error;
   } finally {
-    connection.release();
+    try {
+      if (lockAcquired) await releaseOrderWriteLock(connection);
+    } finally {
+      connection.release();
+    }
   }
 };
 
