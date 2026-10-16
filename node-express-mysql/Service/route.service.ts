@@ -4,7 +4,7 @@ import { RouteStop } from '../Model/RouteStop.model'
 
 const BASE_ROUTE_STOP_QUERY = `
     SELECT 
-        rs.stop_id, rs.work_id, rs.order_id, rs.sequence_no, rs.box_count,
+        rs.stop_id, rs.work_id, rs.order_id, rs.sequence_no, o.box_count,
         o.order_note, o.status, o.created_at,
         rs.customer_id, c.customer_name, c.phone_number, c.location_name, CAST(c.latitude AS DOUBLE) as latitude, CAST(c.longitude AS DOUBLE) as longitude
     FROM \`route_stops\` rs
