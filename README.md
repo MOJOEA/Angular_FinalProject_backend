@@ -2,7 +2,7 @@
 
 ระบบ Backend API สำหรับจัดการข้อมูลลูกค้า (Customer), รายการสั่งซื้อ (Order), การตั้งค่าระบบ (Setting), เส้นทางขนส่ง (Route) และระบบบริหารงาน (Work) พร้อมระบบค้นหาพิกัดตำแหน่ง (Geospatial Query)
 
-* **Base URL:** `https://vercel.com`
+* **Base URL:** `https://angular-final-project-backend.vercel.app`
 
 ---
 
@@ -21,7 +21,7 @@
 
 ---
 
-## 🛠️ Tech Stack & Tools (เครื่องมือที่เลือกใช้)
+## Tech Stack & Tools (เครื่องมือที่เลือกใช้)
 
 * **Runtime Environment:** Node.js (v18+) ร่วมกับ TypeScript
 * **Backend Framework:** Express.js สำหรับการสร้าง RESTful API ที่รวดเร็วและยืดหยุ่น
@@ -109,8 +109,8 @@ npm start
 | :--- | :--- | :--- | :--- |
 | `GET` | `/` | ดึงข้อมูล / ค้นหาลูกค้า | `name`, `limit`, `lat` & `lng` (หารัศมี 1 กม.) |
 | `GET` | `/:id` | ดึงข้อมูลลูกค้าผ่าน ID | - |
-| `POST` | `/` | เพิ่มข้อมูลลูกค้าใหม่ | **Body (JSON):** `{ customer_name, phone_number, location_name, latitude, longitude }` |
-| `PUT` | `/:id` | แก้ไขข้อมูลลูกค้า | **Body (JSON):** ชุดข้อมูลที่ต้องการแก้ไข (เหมือนตอน POST) |
+| `POST` | `/` | เพิ่มข้อมูลลูกค้าใหม่ | `{ customer_name, phone_number, location_name, latitude, longitude }` |
+| `PUT` | `/:id` | แก้ไขข้อมูลลูกค้า | `{ customer_name, phone_number, location_name, latitude, longitude }` |
 | `DELETE` | `/:id` | ลบข้อมูลลูกค้า | - |
 
 ### 3. Order API (ระบบจัดการรายการสั่งซื้อ) - `/api/order`
@@ -119,9 +119,9 @@ npm start
 | :--- | :--- | :--- | :--- |
 | `GET` | `/` | ดึงข้อมูลรายการสั่งซื้อ | `limit`, `lat` & `lng` (หารัศมี 2 กม.) |
 | `GET` | `/:id` | ดึงข้อมูลรายการสั่งซื้อผ่าน ID | - |
-| `POST` | `/` | เพิ่มรายการสั่งซื้อใหม่ | **Body (JSON):** `{ customer_id, box_count, order_note }` |
+| `POST` | `/` | เพิ่มรายการสั่งซื้อใหม่ | `{ customer_id, box_count, order_note }` |
 | `POST` | `/test` | จำลองข้อมูลเข้าระบบ (Mock) | *ล้างข้อมูลเก่าอัตโนมัติ แล้วสร้างใหม่ 20-30 รายการ* |
-| `PUT` | `/:id` | แก้ไขข้อมูลรายการสั่งซื้อ | **Body (JSON):** `{ box_count, order_note, status }` |
+| `PUT` | `/:id` | แก้ไขข้อมูลรายการสั่งซื้อ | `{ box_count, order_note, status }` |
 | `DELETE` | `/:id` | ลบรายการสั่งซื้อผ่าน ID | - |
 | `DELETE` | `/clear` | ล้างข้อมูลรายการสั่งซื้อทั้งหมด | *ลบข้อมูลคำสั่งซื้อทั้งหมดออกจากฐานข้อมูลทันที* |
 
@@ -150,7 +150,7 @@ npm start
 | Method | Endpoint | Description | Query Parameters / Payload |
 | :--- | :--- | :--- | :--- |
 | `GET` | `/` | ดึงข้อมูลการตั้งค่าปัจจุบันของร้าน | - |
-| `PUT` | `/` | อัปเดตข้อมูลการตั้งค่าร้านค้า (ปรับค่าใช้จ่ายและข้อจำกัด) | **Body (JSON):** `{ shop_name, shop_address, shop_latitude, shop_longitude, box_price, box_cost, rider_base_fee, rider_speed_kmh, max_orders_rider, max_boxes_order, departure_time, deadline_time, service_radius_km, id }` |
+| `PUT` | `/` | อัปเดตข้อมูลการตั้งค่าร้านค้า (ปรับค่าใช้จ่ายและข้อจำกัด) | `{ shop_name, shop_address, shop_latitude, shop_longitude, box_price, box_cost, rider_base_fee, rider_speed_kmh, max_orders_rider, max_boxes_order, departure_time, deadline_time, service_radius_km, id }` |
 
 ### 7. Test API (ระบบทดสอบระบบ) - `/api/test`
 
