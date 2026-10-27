@@ -4,7 +4,7 @@ import { Customer } from '../../Model/Customer.model';
 import { Settings } from '../../Model/Settings.model';
 import { PlanningOrder } from '../../Model/Works.model';
 import { getOrder } from '../order.service';
-import { getCustomer } from '../customer.service';
+import { getCustomersService  } from '../customer.service';
 import { getSetting } from '../setting.service';
 import { addRouteStops } from '../route.service';
 
@@ -16,7 +16,7 @@ export class WorkOrderService {
 
   // ฟังก์ชัน: สร้างใบงานและกระจายออเดอร์
   public async generateWorkOrders(): Promise<void> {
-    const [orders, customers, settings] = await Promise.all([getOrder(), getCustomer(), getSetting()]) as [Order[], Customer[], Settings];
+    const [orders, customers, settings] = await Promise.all([getOrder(), getCustomersService(), getSetting()]) as [Order[], Customer[], Settings];
     this.depot = { latitude: settings.shop_latitude, longitude: settings.shop_longitude };
     if (settings.max_orders_rider) this.maxOrdersPerWorkOrder = settings.max_orders_rider;
     const planningOrders = this.prepareOrders(orders, customers);
