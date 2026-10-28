@@ -58,7 +58,7 @@ export const getOrder = async (
             POWER(SIN(RADIANS(c.longitude - ?) / 2), 2)
           ))
         ))
-      ) <= 2
+      ) <= 3
     `;
 
     params.push(lat, lat, lng);

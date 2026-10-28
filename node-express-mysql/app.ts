@@ -35,7 +35,6 @@ app.get("/health", (req, res) => {
 });
 
 
-// นำไปใช้กับ prefix /api/work
 app.use('/api/work', workRoutes);
 
 
