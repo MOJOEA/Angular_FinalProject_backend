@@ -146,7 +146,7 @@ export const acceptWorkService = async (job_code: string | number) => {
 
   // 1.2 ถ้าสถานะเป็น shipping อยู่แล้ว -> ไม่ต้องอัปเดต DB
   if (currentStatus === 'shipping') {
-    return { found: true, isAlreadyShipping: true, work_id };
+    return { found: true, isAlreadyShipping: true };
   }
 
   // 1.3 ถ้ายังไม่เป็น shipping -> อัปเดตสถานะเป็น shipping
