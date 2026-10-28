@@ -16,7 +16,7 @@ export class WorkOrderService {
 
   // ฟังก์ชัน: สร้างใบงานและกระจายออเดอร์
   public async generateWorkOrders(): Promise<void> {
-    const [orders, customers, settings] = await Promise.all([getOrder(), getCustomersService(), getSetting()]) as [Order[], Customer[], Settings];
+    const [orders, customers, settings] = await Promise.all([getOrder(30,16.245842,103.251458), getCustomersService(), getSetting()]) as [Order[], Customer[], Settings];
     this.depot = { latitude: settings.shop_latitude, longitude: settings.shop_longitude };
     if (settings.max_orders_rider) this.maxOrdersPerWorkOrder = settings.max_orders_rider;
     const planningOrders = this.prepareOrders(orders, customers);
