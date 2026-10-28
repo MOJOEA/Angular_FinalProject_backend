@@ -10,6 +10,12 @@ export class OrderLimitExceededError extends Error {
     this.name = "OrderLimitExceededError";
   }
 }
+export class ActiveOrderExistsError extends Error {
+  constructor() {
+    super("ลูกค้ามีออเดอร์ที่ยังไม่เสร็จสิ้นอยู่แล้ว");
+    this.name = "ActiveOrderExistsError";
+  }
+}
 
 const acquireOrderWriteLock = async (connection: any): Promise<void> => {
   const [rows]: any = await connection.query("SELECT GET_LOCK(?, 10) AS acquired", [ORDER_WRITE_LOCK]);
@@ -81,13 +87,33 @@ export const createOrder = async (
     await acquireOrderWriteLock(connection);
     lockAcquired = true;
 
+    if (!Number.isSafeInteger(boxCount) || boxCount < 1 || boxCount > 3) {
+      throw new Error("จำนวนกล่องต้องอยู่ระหว่าง 1 ถึง 3");
+    }
+    const [activeOrders]: any = await connection.query(
+      `SELECT order_id
+       FROM \`order\`
+       WHERE customer_id = ?
+         AND (
+           status IS NULL
+           OR TRIM(status) = ''
+           OR LOWER(TRIM(status)) IN ('pending', 'shipping')
+         )
+       LIMIT 1`,
+      [customerId]
+    );
+
+    if (activeOrders.length > 0) {
+      throw new ActiveOrderExistsError();
+    }
+
     const [rows]: any = await connection.query("SELECT COUNT(*) AS total FROM `order`");
     if (Number(rows[0]?.total) >= MAX_ORDERS) {
       throw new OrderLimitExceededError();
     }
 
     const [result]: any = await connection.query(
-      "INSERT INTO `order` (`customer_id`, `box_count`, `order_note`) VALUES (?, ?, ?)",
+      "INSERT INTO `order` (`customer_id`, `box_count`, `order_note`, `status`) VALUES (?, ?, ?, 'pending')",
       [customerId, boxCount, orderNote ?? null]
     );
 
@@ -131,7 +157,7 @@ export const resetAndCreateTestOrders = async (): Promise<number[]> => {
       const boxCount = Math.floor(Math.random() * 3) + 1;
 
       const [result]: any = await connection.query(
-        "INSERT INTO `order` (`customer_id`, `box_count`, `order_note`) VALUES (?, ?, ?)",
+        "INSERT INTO `order` (`customer_id`, `box_count`, `order_note`, `status`) VALUES (?, ?, ?, 'pending')",
         [customer.customer_id, boxCount, `ออเดอร์ทดสอบ ${i + 1}`]
       );
 
