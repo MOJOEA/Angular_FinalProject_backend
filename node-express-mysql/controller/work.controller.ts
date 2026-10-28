@@ -57,7 +57,7 @@ export const acceptWork = async (req: Request, res: Response): Promise<void> => 
       res.status(200).json({ success: true, message: 'Already in shipping' });
       return;
     }
-    res.status(200).json({ success: true, message: 'Status updated to shipping' });
+    res.status(200).json({ success: true, message: result.work_id });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message || 'Internal Server Error' });
   }

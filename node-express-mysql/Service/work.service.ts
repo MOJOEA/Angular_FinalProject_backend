@@ -51,7 +51,6 @@ const createSingleWork = async (item: any) => {
   // บันทึกรายการ stops (ถ้ามี)
   if (payload.stops && Array.isArray(payload.stops) && payload.stops.length > 0) {
     for (const stop of payload.stops) {
-      // await addRouteStops(newWorkId, stop.order_id, stop.sequence_no);
     }
   }
 
@@ -133,25 +132,26 @@ export const clearAllWorksService = async () => {
 };
 
 // 1. Service สำหรับรับงาน (accept)
-export const acceptWorkService = async (workId: string | number) => {
+export const acceptWorkService = async (job_code: string | number) => {
   // 1.1 ค้นหาข้อมูลสถานะปัจจุบันของงานนี้ก่อน
-  const [rows]: any = await conn.query('SELECT status FROM works WHERE work_id = ?', [workId]);
+  const [rows]: any = await conn.query('SELECT work_id, status FROM works WHERE job_code = ?', [job_code]);
 
   // หากไม่งานในระบบ
   if (!rows || rows.length === 0) {
     return { found: false };
   }
 
-  const currentStatus = rows[0].status;
+  // const currentStatus = rows[0].status;
+  const { work_id, status: currentStatus } = rows[0];
 
   // 1.2 ถ้าสถานะเป็น shipping อยู่แล้ว -> ไม่ต้องอัปเดต DB
   if (currentStatus === 'shipping') {
-    return { found: true, isAlreadyShipping: true };
+    return { found: true, isAlreadyShipping: true, work_id };
   }
 
   // 1.3 ถ้ายังไม่เป็น shipping -> อัปเดตสถานะเป็น shipping
-  await conn.query('UPDATE works SET status = ? WHERE work_id = ?', ['shipping', workId]);
-  return { found: true, isAlreadyShipping: false };
+  await conn.query('UPDATE works SET status = ? WHERE job_code = ?', ['shipping', job_code]);
+  return { found: true, isAlreadyShipping: false, work_id: work_id };
 };
 
 // 2. Service สำหรับออกจากงาน (logout)
