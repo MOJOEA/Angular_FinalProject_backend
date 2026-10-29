@@ -1,15 +1,7 @@
 import { conn } from "../dbconnect";
 import { Order } from "../Model/Order.model";
 
-const MAX_ORDERS = 30;
 const ORDER_WRITE_LOCK = "order-write-limit-30";
-
-export class OrderLimitExceededError extends Error {
-  constructor() {
-    super(`จำนวนออเดอร์ครบ ${MAX_ORDERS} รายการแล้ว ไม่สามารถสร้างเพิ่มได้`);
-    this.name = "OrderLimitExceededError";
-  }
-}
 
 const acquireOrderWriteLock = async (connection: any): Promise<void> => {
   const [rows]: any = await connection.query("SELECT GET_LOCK(?, 10) AS acquired", [ORDER_WRITE_LOCK]);
@@ -30,9 +22,11 @@ export const getOrderById = async (Id: number): Promise<Order> => {
 
 
 export const getOrder = async (
+  status?: string,
   limit?: number,
   lat?: number,
-  lng?: number
+  lng?: number,
+  distance: number = 3
 ): Promise<Order[]> => {
   let query = `
     SELECT o.*, c.customer_name, c.phone_number, c.latitude, c.longitude
@@ -40,11 +34,12 @@ export const getOrder = async (
     LEFT JOIN \`customer\` AS c ON c.customer_id = o.customer_id
   `;
 
-  const params: number[] = [];
+  const conditions: string[] = [];
+  const params: (string | number)[] = [];
 
   if (lat !== undefined && lng !== undefined) {
-    query += `
-      WHERE (
+    conditions.push(`
+      (
         2 * 6371 * ASIN(SQRT(
           LEAST(1, GREATEST(0,
             POWER(SIN(RADIANS(c.latitude - ?) / 2), 2) +
@@ -52,10 +47,18 @@ export const getOrder = async (
             POWER(SIN(RADIANS(c.longitude - ?) / 2), 2)
           ))
         ))
-      ) <= 3
-    `;
+      ) <= ?
+    `);
+    params.push(lat, lat, lng, distance);
+  }
 
-    params.push(lat, lat, lng);
+  if (status !== undefined) {
+    conditions.push("o.status = ?");
+    params.push(status);
+  }
+
+  if (conditions.length) {
+    query += ` WHERE ${conditions.join(" AND ")}`;
   }
 
   query += " ORDER BY o.order_id";
@@ -80,11 +83,6 @@ export const createOrder = async (
   try {
     await acquireOrderWriteLock(connection);
     lockAcquired = true;
-
-    const [rows]: any = await connection.query("SELECT COUNT(*) AS total FROM `order`");
-    if (Number(rows[0]?.total) >= MAX_ORDERS) {
-      throw new OrderLimitExceededError();
-    }
 
     const [result]: any = await connection.query(
       "INSERT INTO `order` (`customer_id`, `box_count`, `order_note`) VALUES (?, ?, ?)",
@@ -171,6 +169,14 @@ export const updateOrderBoxCount = async (
   );
 
   return rows.length > 0;
+};
+
+export const updateOrderSuccess = async (id: number): Promise<boolean> => {
+  const [result]: any = await conn.query(
+    "UPDATE `order` SET `status` = ? WHERE `order_id` = ?",
+    ["completed", id]
+  );
+    return result.affectedRows > 0;
 };
 
 export const deleteOrderById = async (id: number): Promise<boolean> => {
