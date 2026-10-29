@@ -2,11 +2,13 @@ import { Request, Response } from "express";
 import { createOrder, getOrderById } from "../Service/order.service";
 import { getOrder } from "../Service/order.service";
 import { resetAndCreateTestOrders } from "../Service/order.service";
-import { updateOrderBoxCount } from "../Service/order.service";
+import { updateOrderSuccess } from "../Service/order.service";
 import { deleteOrderById } from "../Service/order.service";
+import { updateOrderBoxCount } from "../Service/order.service";
+
 import { clearAllOrders } from "../Service/order.service";
-import { OrderLimitExceededError } from "../Service/order.service";
 import { ActiveOrderExistsError } from "../Service/order.service";
+
 
 export const ControllerGetOrderId = async (req: Request, res: Response) => {
   const id = Number(req.params.id);
@@ -124,15 +126,6 @@ export const ControllerCreateOrder = async (req: Request, res: Response) => {
       res.status(400).json({
         success: false,
         message: error.message,
-      });
-      return;
-    }
-
-    if (error instanceof OrderLimitExceededError) {
-      res.status(409).json({
-        success: false,
-        message,
-        limit: 30,
       });
       return;
     }

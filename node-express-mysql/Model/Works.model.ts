@@ -12,6 +12,16 @@ export interface PlanningOrder {
   direction: string;
 }
 
+export interface SampleWork {
+  job_code: string;
+  color: string;
+  status: 'pending' | 'shipping';
+  total_orders: number;
+  total_boxes: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface WorkData {
   work_id: number;
   job_code: string;

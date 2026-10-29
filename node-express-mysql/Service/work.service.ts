@@ -1,4 +1,5 @@
-import { conn } from '../dbconnect';
+import { conn } from '../dbconnect'; 
+import { SampleWork } from '../Model/Works.model';
 import { getRouteStopsByWorkId } from './route.service';
 
 // 1. GET ALL (ดึงงานทั้งหมด พร้อมดึง stops ของแต่ละงาน)
@@ -64,21 +65,42 @@ const createSingleWork = async (item: any) => {
   };
 };
 
-// 2. Main Service: เช็กว่าเป็น Array หรือ Object เดียว
-export const createWorkService = async (data: any) => {
-  // กรณีส่งมาเป็น Array [...] (บันทึกหลายงานพร้อมกัน)
-  if (Array.isArray(data)) {
-    const results = [];
-    for (const item of data) {
-      const created = await createSingleWork(item);
-      results.push(created);
+export const createWorkService = async () => {
+const sampleWorks: SampleWork[] = [
+  { job_code: 'JOB-20261009-001', color: '#FF5733', status: 'pending', total_orders: 0, total_boxes: 0, created_at: '2026-10-16 03:13:33', updated_at: '2026-10-28 18:54:36' },
+  { job_code: 'JOB-20261009-002', color: '#33FF57', status: 'pending', total_orders: 0, total_boxes: 0, created_at: '2026-10-16 03:13:33', updated_at: '2026-10-28 18:54:36' },
+  { job_code: 'JOB-20261009-003', color: '#3357FF', status: 'pending', total_orders: 0, total_boxes: 0, created_at: '2026-10-16 03:13:33', updated_at: '2026-10-28 18:54:36' },
+  { job_code: 'JOB-20261009-004', color: '#F1C40F', status: 'pending', total_orders: 0, total_boxes: 0, created_at: '2026-10-16 03:13:33', updated_at: '2026-10-28 18:54:36' },
+  { job_code: 'JOB-20261009-005', color: '#9B59B6', status: 'pending', total_orders: 0, total_boxes: 0, created_at: '2026-10-16 03:13:33', updated_at: '2026-10-28 18:54:36' },
+  { job_code: 'JOB-20261009-006', color: '#1ABC9C', status: 'pending', total_orders: 0, total_boxes: 0, created_at: '2026-10-16 03:13:33', updated_at: '2026-10-28 18:54:36' },
+  { job_code: 'JOB-20261009-007', color: '#E91E63', status: 'pending', total_orders: 0, total_boxes: 0, created_at: '2026-10-16 03:13:33', updated_at: '2026-10-28 18:54:36' },
+  { job_code: 'JOB-20261009-008', color: '#34495E', status: 'pending', total_orders: 0, total_boxes: 0, created_at: '2026-10-16 03:13:33', updated_at: '2026-10-28 18:54:36' },
+  { job_code: 'JOB-20261009-009', color: '#FF8D1A', status: 'pending', total_orders: 0, total_boxes: 0, created_at: '2026-10-16 03:13:33', updated_at: '2026-10-28 18:47:30' },
+  { job_code: 'JOB-20261009-010', color: '#8B4513', status: 'pending', total_orders: 0, total_boxes: 0, created_at: '2026-10-16 03:13:33', updated_at: '2026-10-28 18:47:30' },
+  { job_code: 'JOB-20261009-011', color: '#2ECC71', status: 'pending', total_orders: 0, total_boxes: 0, created_at: '2026-10-16 03:13:33', updated_at: '2026-10-16 06:47:15' },
+  { job_code: 'JOB-20261009-012', color: '#00FFFF', status: 'pending', total_orders: 0, total_boxes: 0, created_at: '2026-10-16 03:13:33', updated_at: '2026-10-16 06:12:33' }
+];
+
+  await conn.query('DELETE FROM `works`',);
+  await conn.query('ALTER TABLE `works` AUTO_INCREMENT = 1;',);
+
+  let firstInsertedId: number | null = null;
+
+  for (const item of sampleWorks) {
+    const [result] = await conn.query(
+      `INSERT INTO \`works\`(\`job_code\`, \`color\`, \`status\`,\`total_orders\`, \`total_boxes\`, \`created_at\`, \`updated_at\`)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [ item.job_code, item.color, item.status, item.total_orders, item.total_boxes, item.created_at, item.updated_at]
+    );
+
+    if (firstInsertedId === null) {
+      firstInsertedId = (result as { insertId: number }).insertId;
     }
-    return results;
   }
 
-  // กรณีส่งมาเป็น Object เดียว {}
-  return await createSingleWork(data);
-};
+  return firstInsertedId;
+}
+
 
 // 4. UPDATE BY ID (อัปเดตงานตาม ID และอัปเดตรายการ stops)
 export const updateWorkByIdService = async (id: string | number, data: any) => {
@@ -144,7 +166,7 @@ export const acceptWorkService = async (job_code: string | number) => {
   // const currentStatus = rows[0].status;
   const { work_id, status: currentStatus } = rows[0];
 
-  // 1.2 ถ้าสถานะเป็น shipping อยู่แล้ว -> ไม่ต้องอัปเดต DB
+  // 1.2 ถ้าสถานะเป็น shipping อยู่แล้ว -> ไม่ต้องอัปเดต conn
   if (currentStatus === 'shipping') {
     return { found: true, isAlreadyShipping: true };
   }
