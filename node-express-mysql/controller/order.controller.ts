@@ -2,8 +2,7 @@ import { Request, Response } from "express";
 import { createOrder, getOrderById } from "../Service/order.service";
 import { getOrder } from "../Service/order.service";
 import { resetAndCreateTestOrders } from "../Service/order.service";
-import { updateOrderBoxCount } from "../Service/order.service"; 
-import { updateOrderSuccess } from "../Service/order.service"; 
+import { updateOrderBoxCount } from "../Service/order.service";
 import { deleteOrderById } from "../Service/order.service";
 import { clearAllOrders } from "../Service/order.service";
 import { ActiveOrderExistsError } from "../Service/order.service";
@@ -168,11 +167,11 @@ export const ControllerUpdateOrder = async (req: Request, res: Response) => {
     res.status(400).json({ success: false, message: "id ไม่ถูกต้อง" });
     return;
   }
-  
+
   if (!Number.isSafeInteger(box_count) || box_count < 1 || box_count > 3) {
     res.status(400).json({
       success: false,
-      message: "box_count ต้องเป็นจำนวนเต็มตั้งแต่ 1 ถึง 3",
+      message: "จำนวนกล่อง ต้องเป็นจำนวนเต็มตั้งแต่ 1 ถึง 3",
     });
     return;
   }
