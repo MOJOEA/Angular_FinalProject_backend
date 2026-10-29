@@ -23,28 +23,6 @@ export const getWorkById = async (req: Request, res: Response) => {
   }
 };
 
-// POST api/work
-export const createWork = async (req: Request, res: Response) => {
-  try {
-    const data = await workService.createWorkService(req.body);
-    res.status(201).json({ success: true, data });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error', error });
-  }
-};
-
-// POST api/work/:id
-export const updateWorkById = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const updated = await workService.updateWorkByIdService(id as string, req.body);
-    if (!updated) return res.status(404).json({ success: false, message: 'Work not found' });
-    res.status(200).json({ success: true, message: 'Work updated successfully', data: updated });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error', error });
-  }
-};
-
 // GET api/work/accept/:id
 export const acceptWork = async (req: Request, res: Response): Promise<void> => {
   try {

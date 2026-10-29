@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 
 import { clearAllRouteStops } from "../../Service/route.service";
+import { createWorkService } from "../../Service/work.service";
 import { WorkOrderService } from "../../Service/creatework/creatework.service";
 import * as workService from '../../Service/work.service';
 
@@ -8,6 +9,7 @@ import * as workService from '../../Service/work.service';
 export const ControllerCreatework = async (req: Request, res: Response) => {
     try {
         const workOrderService = new WorkOrderService();
+        await createWorkService();
         await clearAllRouteStops();
         await workOrderService.generateWorkOrders();
         const data = await workService.getAllWorksService();

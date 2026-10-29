@@ -2,11 +2,13 @@ import { Request, Response } from "express";
 import { createOrder, getOrderById } from "../Service/order.service";
 import { getOrder } from "../Service/order.service";
 import { resetAndCreateTestOrders } from "../Service/order.service";
-import { updateOrderBoxCount } from "../Service/order.service";
+import { updateOrderSuccess } from "../Service/order.service";
 import { deleteOrderById } from "../Service/order.service";
+import { updateOrderBoxCount } from "../Service/order.service";
+
 import { clearAllOrders } from "../Service/order.service";
-import { OrderLimitExceededError } from "../Service/order.service";
 import { ActiveOrderExistsError } from "../Service/order.service";
+
 
 export const ControllerGetOrderId = async (req: Request, res: Response) => {
   const id = Number(req.params.id);
@@ -85,7 +87,7 @@ export const ControllerGetOrder = async (req: Request, res: Response) => {
   }
 
   try {
-    const orders = await getOrder(limit, lat, lng);
+    const orders = await getOrder(undefined, limit, lat, lng);
     res.json({ success: true, orders });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -124,15 +126,6 @@ export const ControllerCreateOrder = async (req: Request, res: Response) => {
       res.status(400).json({
         success: false,
         message: error.message,
-      });
-      return;
-    }
-
-    if (error instanceof OrderLimitExceededError) {
-      res.status(409).json({
-        success: false,
-        message,
-        limit: 30,
       });
       return;
     }
@@ -201,6 +194,24 @@ export const ControllerUpdateOrder = async (req: Request, res: Response) => {
       message: "แก้ไขออเดอร์ไม่สำเร็จ",
       error: message,
     });
+  }
+};
+
+export const ControllerUpdateOrderSuccess = async (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+
+  if (!Number.isSafeInteger(id) || id < 1) {
+    res.status(400).json({ success: false, message: "id ไม่ถูกต้อง" });
+    return;
+  }
+
+  try {
+    const found = await updateOrderSuccess(id);
+    res.json({ success: true, message: "จัดส่งออเดอรืสำเร็จ" });
+
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    res.status(500).json({success: false, message: "แก้ไขออเดอร์ไม่สำเร็จ",error: message,});
   }
 };
 
