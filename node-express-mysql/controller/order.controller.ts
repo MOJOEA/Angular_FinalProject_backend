@@ -6,6 +6,8 @@ import { updateOrderBoxCount } from "../Service/order.service";
 import { updateOrderSuccess } from "../Service/order.service"; 
 import { deleteOrderById } from "../Service/order.service";
 import { clearAllOrders } from "../Service/order.service";
+import { ActiveOrderExistsError } from "../Service/order.service";
+
 
 export const ControllerGetOrderId = async (req: Request, res: Response) => {
   const id = Number(req.params.id);
@@ -104,6 +106,7 @@ export const ControllerCreateOrder = async (req: Request, res: Response) => {
     customer_id < 1 ||
     !Number.isSafeInteger(box_count) ||
     box_count < 1 ||
+    box_count > 3 ||
     (order_note !== undefined && typeof order_note !== "string")
   ) {
     res.status(400).json({
@@ -118,6 +121,13 @@ export const ControllerCreateOrder = async (req: Request, res: Response) => {
     res.status(201).json({ success: true, order_id: orderId });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
+    if (error instanceof ActiveOrderExistsError) {
+      res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+      return;
+    }
 
     res.status(500).json({
       success: false,
