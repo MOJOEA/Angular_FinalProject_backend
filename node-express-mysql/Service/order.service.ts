@@ -85,7 +85,7 @@ export const createOrder = async (
     lockAcquired = true;
 
     const [result]: any = await connection.query(
-      "INSERT INTO `order` (`customer_id`, `box_count`, `order_note`) VALUES (?, ?, ?)",
+      "INSERT INTO `order` (`customer_id`, `box_count`, `order_note`, `status`) VALUES (?, ?, ?, 'pending')",
       [customerId, boxCount, orderNote ?? null]
     );
 
@@ -129,7 +129,7 @@ export const resetAndCreateTestOrders = async (): Promise<number[]> => {
       const boxCount = Math.floor(Math.random() * 3) + 1;
 
       const [result]: any = await connection.query(
-        "INSERT INTO `order` (`customer_id`, `box_count`, `order_note`) VALUES (?, ?, ?)",
+        "INSERT INTO `order` (`customer_id`, `box_count`, `order_note`, `status`) VALUES (?, ?, ?, 'pending')",
         [customer.customer_id, boxCount, `ออเดอร์ทดสอบ ${i + 1}`]
       );
 
