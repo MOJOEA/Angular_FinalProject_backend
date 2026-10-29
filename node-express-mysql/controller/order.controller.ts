@@ -85,7 +85,7 @@ export const ControllerGetOrder = async (req: Request, res: Response) => {
   }
 
   try {
-    const orders = await getOrder(limit, lat, lng);
+    const orders = await getOrder(undefined, limit, lat, lng);
     res.json({ success: true, orders });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -201,6 +201,24 @@ export const ControllerUpdateOrder = async (req: Request, res: Response) => {
       message: "แก้ไขออเดอร์ไม่สำเร็จ",
       error: message,
     });
+  }
+};
+
+export const ControllerUpdateOrderSuccess = async (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+
+  if (!Number.isSafeInteger(id) || id < 1) {
+    res.status(400).json({ success: false, message: "id ไม่ถูกต้อง" });
+    return;
+  }
+
+  try {
+    const found = await updateOrderSuccess(id);
+    res.json({ success: true, message: "จัดส่งออเดอรืสำเร็จ" });
+
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    res.status(500).json({success: false, message: "แก้ไขออเดอร์ไม่สำเร็จ",error: message,});
   }
 };
 

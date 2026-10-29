@@ -4,6 +4,10 @@ export interface Order {
   box_count:            number;
   order_note?:          string;
   status: 'pending' | 'shipping' | 'completed' | string;
-  created_at?:          Date;
-  updated_at?:          Date;
+  created_at?:          Date | string;
+  updated_at?:          Date | string;
+  customer_name:        string;
+  phone_number:         string;
+  latitude:             number;
+  longitude:            number;
 }
